@@ -31,4 +31,38 @@
  */
 export function fixBollywoodTitle(title) {
   // Your code here
+  if (typeof title !== "string" || title.length === 0) return "";
+
+  const Exceptions = [
+    "ka",
+    "ki",
+    "ke",
+    "se",
+    "aur",
+    "ya",
+    "the",
+    "of",
+    "in",
+    "a",
+    "an",
+  ];
+
+  return title
+    .trim()
+    .split(/\s+/)
+    .map((word, idx) => {
+      //convert cuurent word to lowercase first
+      word = word.toLowerCase();
+      // first word is always capitalized
+      if (idx === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      // Exception words remian lowercase
+      if (Exceptions.includes(word)) {
+        return word;
+      }
+      // Title case
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
 }
