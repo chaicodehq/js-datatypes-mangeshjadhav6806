@@ -33,7 +33,7 @@
  *
  * @param {{ name: string, from: string, to: string, classType: string }} passenger
  * @returns {string} Formatted pass or "INVALID PASS"
- *
+ * 
  * @example
  *   generateLocalPass({ name: "rahul sharma", from: "dadar", to: "andheri", classType: "first" })
  *   // => "MUMBAI LOCAL PASS\n---\nName: RAHUL SHARMA\nFrom: Dadar\nTo: Andheri\nClass: FIRST\nPass ID: FDADAND"
@@ -43,4 +43,56 @@
  */
 export function generateLocalPass(passenger) {
   // Your code here
+  // Validation
+  if (
+    typeof passenger !== "object" ||
+    passenger === null ||
+    !("name" in passenger) ||
+    !("from" in passenger) ||
+    !("to" in passenger) ||
+    !("classType" in passenger)
+  ) {
+    return "INVALID PASS";
+  }
+
+  if (
+    passenger.name === "" ||
+    passenger.from === "" ||
+    passenger.to === "" ||
+    passenger.classType === ""
+  ) {
+    return "INVALID PASS";
+  }
+
+  const classType = passenger.classType.toLowerCase();
+
+  if (classType !== "first" && classType !== "second") {
+    return "INVALID PASS";
+  }
+
+  // Formatting
+  const name = passenger.name.toUpperCase();
+
+  const from =
+    passenger.from.charAt(0).toUpperCase() +
+    passenger.from.slice(1).toLowerCase();
+
+  const to =
+    passenger.to.charAt(0).toUpperCase() +
+    passenger.to.slice(1).toLowerCase();
+
+  const className = classType.toUpperCase();
+
+  const passId =
+    classType.charAt(0).toUpperCase() +
+    passenger.from.slice(0, 3).toUpperCase() +
+    passenger.to.slice(0, 3).toUpperCase();
+
+  return `MUMBAI LOCAL PASS
+---
+Name: ${name}
+From: ${from}
+To: ${to}
+Class: ${className}
+Pass ID: ${passId}`;
 }
