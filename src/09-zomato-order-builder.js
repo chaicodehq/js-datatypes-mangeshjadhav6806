@@ -47,4 +47,153 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
+  // ==========================
+  // Step 1: Validation
+  // ==========================
+  // If cart is not an array OR it is empty,
+  // return null as mentioned in the question.
+  if (!Array.isArray(cart) || cart.length === 0) {
+    return null;
+  }
+
+  // ==========================
+  // Step 2: Remove invalid items
+  // ==========================
+  // Keep only those items whose quantity is greater than 0.
+  const validItems = cart.filter(item => item.qty > 0);
+
+  // ==========================
+  // Step 3: Build item summary
+  // ==========================
+  const items = validItems.map(item => {
+
+    // Calculate total price of all addons.
+    // Example:
+    // ["Extra Cheese:50", "Coke:40"]
+    // becomes 90
+    const addonTotal = (item.addons || []).reduce((sum, addon) => {
+
+      // Split "Extra Cheese:50"
+      // Result -> ["Extra Cheese", "50"]
+      const parts = addon.split(":");
+
+      // Convert "50" into number.
+      // If invalid, use 0.
+      const addonPrice = parseFloat(parts[1]) || 0;
+
+      // Add current addon price to running total.
+      return sum + addonPrice;
+
+    }, 0);
+
+    // Formula given in question
+    // (Base Price + Addon Total) × Quantity
+    const itemTotal = (item.price + addonTotal) * item.qty;
+
+    // Return object for this item
+    return {
+      name: item.name,
+      qty: item.qty,
+      basePrice: item.price,
+      addonTotal: addonTotal,
+      itemTotal: itemTotal
+    };
+  });
+
+  // ==========================
+  // Step 4: Calculate subtotal
+  // ==========================
+  // Add all item totals together.
+  const subtotal = items.reduce((sum, item) => {
+    return sum + item.itemTotal;
+  }, 0);
+
+  // ==========================
+  // Step 5: Calculate Delivery Fee
+  // ==========================
+  let deliveryFee = 0;
+
+  if (subtotal < 500) {
+    deliveryFee = 30;
+  }
+  else if (subtotal < 1000) {
+    deliveryFee = 15;
+  }
+  else {
+    // FREE delivery
+    deliveryFee = 0;
+  }
+
+  // ==========================
+  // Step 6: Calculate GST
+  // ==========================
+  // GST = 5% of subtotal
+  // Rounded to 2 decimal places.
+  const gst = parseFloat((subtotal * 0.05).toFixed(2));
+
+  // ==========================
+  // Step 7: Apply Coupon
+  // ==========================
+  let discount = 0;
+
+  // Coupon should be a string
+  if (typeof coupon === "string") {
+
+    // Convert to lowercase
+    // FIRST50 -> first50
+    const code = coupon.toLowerCase();
+
+    // FIRST50 Coupon
+    if (code === "first50") {
+
+      // 50% discount
+      const halfPrice = subtotal * 0.5;
+
+      // Maximum discount allowed = 150
+      discount = Math.min(halfPrice, 150);
+    }
+
+    // FLAT100 Coupon
+    else if (code === "flat100") {
+      discount = 100;
+    }
+
+    // FREESHIP Coupon
+    else if (code === "freeship") {
+
+      // Discount equals delivery fee.
+      discount = deliveryFee;
+
+      // Delivery becomes free.
+      deliveryFee = 0;
+    }
+
+    // Invalid coupon
+    // discount remains 0.
+  }
+
+  // ==========================
+  // Step 8: Calculate Grand Total
+  // ==========================
+  // Formula:
+  // subtotal + delivery + gst - discount
+
+  const grandTotal = parseFloat(
+    Math.max(
+      subtotal + deliveryFee + gst - discount,
+      0 // Grand total should never be negative
+    ).toFixed(2)
+  );
+
+  // ==========================
+  // Step 9: Return final object
+  // ==========================
+  return {
+    items,
+    subtotal,
+    deliveryFee,
+    gst,
+    discount,
+    grandTotal
+  };
 }

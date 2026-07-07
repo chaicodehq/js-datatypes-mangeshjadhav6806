@@ -48,4 +48,95 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+ if (!Array.isArray(transactions) || transactions.length === 0)
+        return null;
+
+    const validTrs = transactions.filter(
+        tr =>
+            typeof tr.amount === "number" &&
+            tr.amount > 0 &&
+            (tr.type === "credit" || tr.type === "debit")
+    );
+
+    if (validTrs.length === 0)
+        return null;
+
+    let totalCredit = 0;
+    let totalDebit = 0;
+    let transactionCount = 0;
+    let highestTransaction = null;
+    let maxAmount = -1;
+
+    const categoryBreakdown = {};
+    const contactCount = {};
+
+    for (const obj of validTrs) {
+
+        // Credit/Debit
+        if (obj.type === "credit")
+            totalCredit += obj.amount;
+        else
+            totalDebit += obj.amount;
+
+        // Count
+        transactionCount++;
+
+        // Highest Transaction
+        if (obj.amount > maxAmount) {
+            maxAmount = obj.amount;
+            highestTransaction = obj;
+        }
+
+        // Category Breakdown
+        if (!categoryBreakdown[obj.category]) {
+            categoryBreakdown[obj.category] = 0;
+        }
+
+        categoryBreakdown[obj.category] += obj.amount;
+
+        // Contact Count
+        if (!contactCount[obj.to]) {
+            contactCount[obj.to] = 0;
+        }
+
+        contactCount[obj.to]++;
+    }
+
+    // Net Balance
+    const netBalance = totalCredit - totalDebit;
+
+    // Average
+    const avgTransaction = Math.round(
+        (totalCredit + totalDebit) / transactionCount
+    );
+
+    // Frequent Contact
+    let frequentContact = "";
+    let maxCount = 0;
+
+    for (const name in contactCount) {
+        if (contactCount[name] > maxCount) {
+            maxCount = contactCount[name];
+            frequentContact = name;
+        }
+    }
+
+    // every()
+    const allAbove100 = validTrs.every(tr => tr.amount > 100);
+
+    // some()
+    const hasLargeTransaction = validTrs.some(tr => tr.amount >= 5000);
+
+    return {
+        totalCredit,
+        totalDebit,
+        netBalance,
+        transactionCount,
+        avgTransaction,
+        highestTransaction,
+        categoryBreakdown,
+        frequentContact,
+        allAbove100,
+        hasLargeTransaction
+    };
 }
